@@ -1,0 +1,23 @@
+<template>
+    <lightning-card class="attendance-card">
+        <div class="card-title">
+            <h2 style="text-align:center">Attendance Management System</h2>
+        </div>
+        <div class="container">
+            <div class="date-time">
+                <p><strong>Date:</strong> <span>{currentDate}</span></p>
+                <p><strong>Time:</strong> <span>{currentTime}</span></p>
+            </div>
+            <div class="labels">
+                <p class="bold">Punch In: <span>{punchInTime}</span></p>
+                <p class="bold">Punch Out: <span>{punchOutTime}</span></p>
+                <p class="bold">Total Time: <span>{totalHours}</span></p>
+            </div>
+            <div class="buttons">
+                <lightning-button label="Punch In" class="btn" onclick={handlePunchIn} disabled={punchInDisabled}></lightning-button>
+                <lightning-button label="Punch Out" class="btn" onclick={handlePunchOut} disabled={punchOutDisabled}></lightning-button>
+                <lightning-button label="Work From Home" class="btn" onclick={handleWFH} disabled={wfhDisabled}></lightning-button>
+            </div>
+        </div>
+    </lightning-card>
+</template>

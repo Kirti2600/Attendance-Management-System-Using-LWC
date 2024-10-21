@@ -1,0 +1,59 @@
+.card-title {
+    text-align: center; /* Center the title */
+    margin: 10px 0; /* Space above and below the title */
+    font-weight: bold; /* Make the title bold */
+    font-size: 24px; /* Adjust font size as needed */
+}
+
+.container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+}
+
+.date-time {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin-right: 20px; /* Space between date-time and labels */
+}
+
+.labels {
+    flex: 2;
+    display: flex;
+    justify-content: center;
+    gap: 20px; /* Adjust spacing between the labels */
+    text-align: center;
+}
+
+.labels p {
+    margin: 0; /* Remove default margins */
+}
+
+.bold {
+    font-weight: 500; /* Lighter boldness for labels */
+}
+
+.buttons {
+    display: flex;
+    justify-content: flex-end; /* Align buttons to the right */
+    gap: 0; /* No initial gap */
+}
+
+.btn {
+    padding: 10px 10px; /* Inner padding for button content */
+    min-width: 120px; /* Minimum button width */
+    text-align: center;
+    border-radius: 6px; /* Rounded edges */
+    white-space: nowrap; /* Prevent text wrapping */
+}
+
+.buttons .btn {
+    margin-left: 1px; /* Left margin to create even spacing */
+}
+
+.buttons .btn:first-child {
+    margin-left: 0; /* Remove margin from the first button */
+}
