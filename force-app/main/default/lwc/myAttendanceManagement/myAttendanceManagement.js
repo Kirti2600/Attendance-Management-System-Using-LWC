@@ -1,3 +1,4 @@
+
 import { LightningElement, track } from 'lwc';
 import punchInAttendance from '@salesforce/apex/AttendanceKirtiController.punchInAttendance';
 import punchOutAttendance from '@salesforce/apex/AttendanceKirtiController.punchOutAttendance';
@@ -14,7 +15,9 @@ export default class MyAttendanceManagement extends LightningElement {
     @track currentDate;
     @track punchInTime;
     @track punchOutTime;
-
+    @track attendanceId;
+    @track attendance;
+    @track totalWorkedTime;
     connectedCallback() {
         
         this.startTimer(); // Start the timer to update current time
@@ -28,13 +31,15 @@ export default class MyAttendanceManagement extends LightningElement {
                         console.log(result);
 
             if(result){
+                this.attendanceId=result.Id;
+                this.attendance=result;
                 console.log(result);
                 if(!result.Punch_In__c ){
                     console.log('!result.Punch_In__c');
                     
-                    this.punchInDisabled = true;
-                    this.punchOutDisabled = false;
-                    this.wfhDisabled = true;
+                    this.punchInDisabled = false;
+                    this.punchOutDisabled = true;
+                    this.wfhDisabled = false;
                 }
 
                else if(result.Punch_In__c && !result.Punch_Out__c){
@@ -54,17 +59,43 @@ export default class MyAttendanceManagement extends LightningElement {
                 }
                 else{
                     console.log('else');
-
-                    this.punchInDisabled = true;
-                    this.punchOutDisabled = false;
-                    this.wfhDisabled = true;
+                   this.punchInDisabled = false;
+                    this.punchOutDisabled = true;
+                    this.wfhDisabled = false;
                 }
+
+                if(result.Punch_In__c){
+
+             const punchInUTC = new Date(result.Punch_In__c);
+             this.punchInTime = this.formatDateTime(punchInUTC);
+                }
+
+  if(result.Punch_Out__c){
+const punchOutUTC = new Date(result.Punch_Out__c);
+this.punchOutTime = this.formatDateTime(punchOutUTC);
+                }
+
+
 
               
             }
+            else{
+                 this.punchInDisabled = false;
+                    this.punchOutDisabled = true;
+                    this.wfhDisabled = false;
+            }
+
+
+
+                  if(result.Punch_In__c && result.Punch_Out__c){
+                        this.totalWorkedTime = this.calculateTotalTime(new Date(result.Punch_In__c), new Date(result.Punch_Out__c));
+                  }
+
+
         })
-        .catch(() => {
-            this.showToast('Error', 'Error ', 'error');
+        .catch((error) => {
+            console.log('OUTPUT : ',error);
+          //  this.showToast('Error', 'Error ', 'error');
         });
     }
 
@@ -113,14 +144,16 @@ export default class MyAttendanceManagement extends LightningElement {
     // }
 
     handlePunchIn() {
-        console.log("In handle Punch In")
+        console.log("In handle Punch In");
+          this.punchInDisabled = true;
+                this.punchOutDisabled = false;
+                this.wfhDisabled = true;
         this.punchInTime = new Date().toLocaleTimeString();
         punchInAttendance({'isWorkFromHome':false})
             .then((result) => {
+                this.attendance=result;
                 //this.punchInTime = result.Punch_In__c;
-                this.punchInDisabled = true;
-                this.punchOutDisabled = false;
-                this.wfhDisabled = true;
+              this.attendanceId=result.Id;
                 this.showToast('Success', 'Punched in successfully!', 'success');
             })
             .catch(() => {
@@ -132,8 +165,9 @@ export default class MyAttendanceManagement extends LightningElement {
         // console.log("Punch out time:"+new Date().toLocaleTimeString());
         this.punchOutTime =new Date().toLocaleTimeString();
         console.log('punch out '+this.punchOutTime);
-        
-        punchOutAttendance()
+       this.totalWorkedTime = this.calculateTotalTime(new Date(attendance.Punch_In__c), new Date(attendance.Punch_Out__c));
+
+        punchOutAttendance({'attendanceId':this.attendanceId})
             .then((result) => {
                 console.log('result'+result);
                 
@@ -183,30 +217,26 @@ export default class MyAttendanceManagement extends LightningElement {
  
  
     
-
-
-calculateTotalHours() {
-    if (this.punchInTime && this.punchOutTime) {
-    
-
-        const punchInDate = new Date(this.punchInTime); // Parse the time into Date object
-        const punchOutDate = new Date(this.punchOutTime); // Parse punch-out as Date object
-
-        // Calculate the difference in milliseconds between punch-in and punch-out
-        const diffMs = punchOutDate - punchInDate; // Calculate the difference in milliseconds
-        
-        // Convert milliseconds to hours, minutes, and seconds
-        const totalSeconds = Math.floor(diffMs / 1000);
-        const hours = Math.floor(totalSeconds / 3600);
-        const minutes = Math.floor((totalSeconds % 3600) / 60);
-        const seconds = totalSeconds % 60;
-
-        // Format total hours as HH:MM:SS
-        this.totalHours = `${this.padZero(hours)}:${this.padZero(minutes)}:${this.padZero(seconds)}`;
-    } else {
-        this.totalHours = '00:00:00'; // Reset if not both times are set
+calculateTotalTime(punchInTime, punchOutTime) {
+    if (!punchInTime || !punchOutTime || isNaN(punchInTime) || isNaN(punchOutTime)) {
+        return 'N/A'; // Handle case where times are invalid
     }
+
+    // Get the difference in milliseconds
+    const diffMilliseconds = punchOutTime - punchInTime;
+
+    // Convert the difference into hours and minutes
+    const diffHours = Math.floor(diffMilliseconds / (1000 * 60 * 60)); // Convert to hours
+    const diffMinutes = Math.floor((diffMilliseconds % (1000 * 60 * 60)) / (1000 * 60)); // Convert to minutes
+ const formattedHours = String(diffHours).padStart(2, '0');
+    const formattedMinutes = String(diffMinutes).padStart(2, '0');
+
+    // Return the formatted total time
+    return `${formattedHours}:${formattedMinutes}`;
 }
+
+
+
 
     showToast(title, message, variant) {
         const event = new ShowToastEvent({
@@ -233,4 +263,28 @@ calculateTotalHours() {
             this.punchOutDisabled = true;   // Disable Punch Out until Punch In is made
         }
     }
+
+    formatDateTime(dateObj) {
+    if (isNaN(dateObj)) {
+        return ''; // If the date is invalid, return an empty string
+    }
+
+    // Format date in dd/MM/yyyy format
+    const datePart = dateObj.toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+    });
+
+    // Format time in hh:mm a format
+    const timePart = dateObj.toLocaleTimeString('en-GB', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true
+    });
+
+    return  timePart;
 }
+}
+
