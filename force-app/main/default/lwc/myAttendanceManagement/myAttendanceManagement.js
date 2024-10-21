@@ -1,4 +1,3 @@
-
 import { LightningElement, track } from 'lwc';
 import punchInAttendance from '@salesforce/apex/AttendanceKirtiController.punchInAttendance';
 import punchOutAttendance from '@salesforce/apex/AttendanceKirtiController.punchOutAttendance';
@@ -287,4 +286,3 @@ calculateTotalTime(punchInTime, punchOutTime) {
     return  timePart;
 }
 }
-

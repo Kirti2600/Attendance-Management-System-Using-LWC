@@ -1,23 +1,20 @@
-
 public  class AttendanceKirtiController
 {
     @AuraEnabled
     public static Attendance__c punchInAttendance(Boolean isWorkFromHome) {
         // Get the user ID of the current user
-        Id userId = UserInfo.getUserId();
+        String userId = UserInfo.getUserId();
     Integer totalAbsent = 0; // Initialize total absent count
-
-        
-        // Query the current user to retrieve the Employee_Id__c field
-        User currentUser = [SELECT Employee_Id__c FROM User WHERE Id = :userId LIMIT 1];
     
         // Use the Employee_Id__c field to get the Employee__c record
-        Employee__c employee = [SELECT Id FROM Employee__c WHERE User__c = :currentUser.Id LIMIT 1];
-    
-        // Get the current year and month
+        Employee__c employee = [SELECT Id, Name FROM Employee__c WHERE User__c = :userId LIMIT 1];
+          
+
+       
+         // Get the current year and month
         Integer currentYear = Date.today().year();
         Integer currentMonth = Date.today().month();
-                    Integer totalDays = Date.daysInMonth(currentYear, currentMonth);
+        Integer totalDays = Date.daysInMonth(currentYear, currentMonth);
 
     
         // Check or create the monthly attendance record
